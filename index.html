@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カンナビノイドクイズ - 楽しく学ぼう！</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .quiz-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #5a67d8;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: clamp(24px, 5vw, 32px);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .question-container {
+            display: none;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .question-number {
+            color: #764ba2;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: clamp(18px, 3vw, 24px);
+            color: #2d3748;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .answer-btn {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 16px;
+            color: #2d3748;
+        }
+
+        .answer-btn:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateX(5px);
+        }
+
+        .answer-btn.selected {
+            background: #e9d8fd;
+            border-color: #764ba2;
+        }
+
+        .true-false-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .true-false-btn {
+            flex: 1;
+            max-width: 200px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 30px;
+        }
+
+        .next-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 14px 36px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.2s;
+            float: right;
+        }
+
+        .next-btn:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .next-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 48px;
+            color: #5a67d8;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .level-badge {
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .level-beginner {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .level-intermediate {
+            background: #ddd6fe;
+            color: #5b21b6;
+        }
+
+        .level-advanced {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        .level-expert {
+            background: #a7f3d0;
+            color: #065f46;
+        }
+
+        .comment {
+            color: #4a5568;
+            font-size: 18px;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+
+        .answer-review {
+            margin-top: 40px;
+            text-align: left;
+        }
+
+        .answer-review h3 {
+            color: #5a67d8;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .review-item {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .review-question {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .review-answer {
+            color: #48bb78;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .review-explanation {
+            color: #4a5568;
+            line-height: 1.8;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: transform 0.2s;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .share-btn {
+            background: #000000;
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .share-btn:hover {
+            background: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 600px) {
+            .quiz-card {
+                padding: 20px;
+            }
+
+            .true-false-container {
+                flex-direction: column;
+            }
+
+            .true-false-btn {
+                max-width: 100%;
+            }
+
+            .start-btn, .restart-btn {
+                padding: 14px 36px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="quiz-card">
+            <h1>🌿 カンナビノイドクイズ 🌿</h1>
+            <p class="subtitle">楽しみながらカンナビノイドについて学ぼう！</p>
+
+            <div class="start-screen" id="startScreen">
+                <p style="font-size: 18px; color: #4a5568; margin-bottom: 30px;">
+                    全5問のクイズに挑戦して、<br>
+                    カンナビノイドの知識をチェックしてみましょう！
+                </p>
+                <button class="start-btn" onclick="startQuiz()">クイズを始める</button>
+            </div>
+
+            <div class="question-container" id="questionContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="question-number" id="questionNumber"></div>
+                <div class="question-text" id="questionText"></div>
+                <div class="answer-options" id="answerOptions"></div>
+                <button class="next-btn" id="nextBtn" onclick="nextQuestion()" disabled>次の問題へ</button>
+            </div>
+
+            <div class="result-screen" id="resultScreen">
+                <h2 style="color: #5a67d8; margin-bottom: 20px;">クイズ終了！</h2>
+                <div class="score-display" id="scoreDisplay"></div>
+                <div class="level-badge" id="levelBadge"></div>
+                <div class="comment" id="comment"></div>
+                
+                <div class="answer-review">
+                    <h3>📚 正解と解説</h3>
+                    <div id="reviewContainer"></div>
+                </div>
+                
+                <div class="button-container">
+                    <button class="share-btn" onclick="shareToX()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                        結果をXでシェア
+                    </button>
+                    <button class="restart-btn" onclick="restartQuiz()">もう一度挑戦する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                type: 'trueFalse',
+                question: 'CBD（カンナビジオール）は、大麻草から抽出される成分で、精神作用（ハイになる効果）がある。',
+                answer: false,
+                explanation: 'CBDには精神作用はありません。精神作用があるのはTHC（テトラヒドロカンナビノール）という別の成分です。CBDはリラックス効果や抗炎症作用が期待されており、日本でも合法的に使用できます。'
+            },
+            {
+                type: 'multiple',
+                question: '人間の体内には「エンドカンナビノイドシステム」という仕組みがあります。この名前の由来は？',
+                options: [
+                    '発見者のエンド博士の名前から',
+                    '大麻（カンナビス）の研究から発見されたから',
+                    '内部（エンド）を意味する医学用語から',
+                    'エンドルフィンと似た構造だから'
+                ],
+                answer: 1,
+                explanation: 'エンドカンナビノイドシステムは、大麻（カンナビス）の研究過程で発見されたため、この名前がつけられました。「エンド」は「内因性（体内で作られる）」を意味し、体内で自然に作られるカンナビノイド様物質のシステムです。'
+            },
+            {
+                type: 'trueFalse',
+                question: 'ヘンプ（産業用大麻）から作られる製品には、衣類、食品、建材などがある。',
+                answer: true,
+                explanation: 'ヘンプは非常に用途の広い植物です。繊維は衣類やロープに、種子は食用油や健康食品に、茎は建材や紙の原料として使われます。環境に優しい素材として世界中で注目されています。'
+            },
+            {
+                type: 'multiple',
+                question: 'エンドカンナビノイドシステムの受容体「CB1」と「CB2」。CB1受容体が主に存在する場所は？',
+                options: [
+                    '筋肉と骨',
+                    '脳と中枢神経系',
+                    '肝臓と腎臓',
+                    '心臓と血管'
+                ],
+                answer: 1,
+                explanation: 'CB1受容体は主に脳と中枢神経系に存在し、気分、記憶、痛みの感覚などに関わっています。一方、CB2受容体は主に免疫系の細胞に存在し、炎症反応の調節に関わっています。'
+            },
+            {
+                type: 'multiple',
+                question: '大麻草の学名「Cannabis sativa L.」の「L.」は何を表している？',
+                options: [
+                    'Large（大型）の略',
+                    'Legal（合法）の略',
+                    '分類学者リンネ（Linnaeus）の略',
+                    'Light（光）の略'
+                ],
+                answer: 2,
+                explanation: '「L.」は18世紀の著名な植物学者カール・フォン・リンネ（Carl von Linnaeus）を表しています。彼は現在の生物分類学の基礎を築いた人物で、多くの植物の学名に「L.」として名前が残されています。'
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = [];
+
+        function startQuiz() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('questionContainer').style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('questionNumber').textContent = `問題 ${currentQuestion + 1} / ${questions.length}`;
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('answerOptions');
+            optionsContainer.innerHTML = '';
+            
+            if (question.type === 'trueFalse') {
+                optionsContainer.className = 'answer-options true-false-container';
+                
+                const trueBtn = document.createElement('button');
+                trueBtn.className = 'answer-btn true-false-btn';
+                trueBtn.textContent = '⭕ 正しい';
+                trueBtn.onclick = () => selectAnswer(true);
+                
+                const falseBtn = document.createElement('button');
+                falseBtn.className = 'answer-btn true-false-btn';
+                falseBtn.textContent = '❌ 間違い';
+                falseBtn.onclick = () => selectAnswer(false);
+                
+                optionsContainer.appendChild(trueBtn);
+                optionsContainer.appendChild(falseBtn);
+            } else {
+                optionsContainer.className = 'answer-options';
+                
+                question.options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'answer-btn';
+                    btn.textContent = option;
+                    btn.onclick = () => selectAnswer(index);
+                    optionsContainer.appendChild(btn);
+                });
+            }
+            
+            updateProgress();
+            document.getElementById('nextBtn').disabled = true;
+        }
+
+        function selectAnswer(answer) {
+            userAnswers[currentQuestion] = answer;
+            
+            const buttons = document.querySelectorAll('.answer-btn');
+            buttons.forEach((btn, index) => {
+                btn.classList.remove('selected');
+                if (questions[currentQuestion].type === 'trueFalse') {
+                    if ((answer === true && btn.textContent.includes('正しい')) ||
+                        (answer === false && btn.textContent.includes('間違い'))) {
+                        btn.classList.add('selected');
+                    }
+                } else if (index === answer) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextQuestion() {
+            if (userAnswers[currentQuestion] === questions[currentQuestion].answer) {
+                score++;
+            }
+            
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function showResult() {
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+            
+            const percentage = (score / questions.length) * 100;
+            document.getElementById('scoreDisplay').textContent = `${score} / ${questions.length} 問正解`;
+            
+            let level, comment;
+            const levelBadge = document.getElementById('levelBadge');
+            
+            if (percentage === 100) {
+                level = 'カンナビノイドマスター';
+                levelBadge.className = 'level-badge level-expert';
+                comment = '素晴らしい！完璧な成績です！あなたはカンナビノイドについて深い知識を持っています。';
+            } else if (percentage >= 80) {
+                level = '上級者';
+                levelBadge.className = 'level-badge level-advanced';
+                comment = 'とても良い成績です！カンナビノイドについてしっかり理解されています。';
+            } else if (percentage >= 60) {
+                level = '中級者';
+                levelBadge.className = 'level-badge level-intermediate';
+                comment = '良い成績です！基本的な知識は身についています。もう少し学ぶとさらに理解が深まります。';
+            } else {
+                level = '初級者';
+                levelBadge.className = 'level-badge level-beginner';
+                comment = 'カンナビノイドについて学び始めたばかりですね。これからもっと知識を深めていきましょう！';
+            }
+            
+            levelBadge.textContent = level;
+            document.getElementById('comment').textContent = comment;
+            
+            // 答えと解説を表示
+            const reviewContainer = document.getElementById('reviewContainer');
+            reviewContainer.innerHTML = '';
+            
+            questions.forEach((q, index) => {
+                const reviewItem = document.createElement('div');
+                reviewItem.className = 'review-item';
+                
+                const questionText = document.createElement('div');
+                questionText.className = 'review-question';
+                questionText.textContent = `問題${index + 1}: ${q.question}`;
+                
+                const answerText = document.createElement('div');
+                answerText.className = 'review-answer';
+                if (q.type === 'trueFalse') {
+                    answerText.textContent = `正解: ${q.answer ? '⭕ 正しい' : '❌ 間違い'}`;
+                } else {
+                    answerText.textContent = `正解: ${q.options[q.answer]}`;
+                }
+                
+                const explanationText = document.createElement('div');
+                explanationText.className = 'review-explanation';
+                explanationText.textContent = q.explanation;
+                
+                reviewItem.appendChild(questionText);
+                reviewItem.appendChild(answerText);
+                reviewItem.appendChild(explanationText);
+                reviewContainer.appendChild(reviewItem);
+            });
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = [];
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+
+        function shareToX() {
+            const percentage = (score / questions.length) * 100;
+            let level;
+            
+            if (percentage === 100) {
+                level = 'カンナビノイドマスター';
+            } else if (percentage >= 80) {
+                level = '上級者';
+            } else if (percentage >= 60) {
+                level = '中級者';
+            } else {
+                level = '初級者';
+            }
+            
+            // 現在のページのURLを取得（GitHub PagesでもVercelでも対応）
+            const currentUrl = window.location.href;
+            
+            // ツイート内容を作成
+            const tweetText = `🌿 カンナビノイドクイズに挑戦！\n\n結果：${score}/${questions.length}問正解\nレベル：${level}\n\nあなたもカンナビノイドの知識をチェックしてみよう！\n`;
+            
+            // URLエンコード
+            const encodedText = encodeURIComponent(tweetText);
+            const encodedUrl = encodeURIComponent(currentUrl);
+            
+            // X（Twitter）のシェアURLを構築
+            const shareUrl = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+            
+            // 新しいウィンドウまたはタブで開く（モバイルアプリがある場合は自動的にアプリが開く）
+            window.open(shareUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
